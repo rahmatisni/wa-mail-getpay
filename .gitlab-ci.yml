@@ -34,7 +34,7 @@ deploy:
   stage: deploy_stage
   extends: .base-rules
   script:
-    - "pm2 start run.js"
+    - "pm2 restart example"
   cache:
     <<: *global_cache
     policy: pull
