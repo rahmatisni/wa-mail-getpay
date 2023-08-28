@@ -136,12 +136,7 @@ client.on("ready", () => {
         const myPlaintextPassword = r.toString();
         const salt = bcrypt.genSaltSync(saltRounds);
         const hash = bcrypt.hashSync(myPlaintextPassword, salt);
-        // const message = `Selamat anda terdaftar dalam acara HUT PT JMTO kode QR anda adalah : ${myPlaintextPassword}`;
-
-        const message = `*Selamat! Anda terdaftar dalam acara HUT PT JMTO yang ke-8🎉*\n\nKode QR anda adalah ${myPlaintextPassword}\nAnda dapat menggunakan QR untuk absensi serta mengambil makanan di tenant pada fitur GetPay di aplikasi Travoy.\n\nPastikan nomor yang anda daftarkan juga terdaftar pada aplikasi Travoy.`;
-
-        // res.send(hash); // echo the result back
-        // res.send(req.body.phone);
+        const message = `RAHASIA! Password QR Anda adalah : ${myPlaintextPassword}`;
         try {
             client
                 .sendMessage(chatIds, message)
@@ -176,12 +171,8 @@ client.on("ready", () => {
         const salt = bcrypt.genSaltSync(saltRounds);
         const hash = bcrypt.hashSync(myPlaintextPassword, salt);
         // const message = `Password QR Paystation anda adalah : ${myPlaintextPassword}`;
+        const message = `RAHASIA! Password QR Anda adalah : ${myPlaintextPassword}`;
 
-        const message = `*Selamat! Anda terdaftar dalam acara HUT PT JMTO yang ke-8🎉*\n\nKode QR anda adalah ${myPlaintextPassword}\nAnda dapat menggunakan QR untuk absensi serta mengambil makanan di tenant pada fitur GetPay di aplikasi Travoy.\n\nPastikan nomor yang anda daftarkan juga terdaftar pada aplikasi Travoy.`;
-        // res.send(hash); // echo the result back
-
-        // res.send(hash); // echo the result back
-        // res.send(req.body.phone);
         try {
             client
                 .sendMessage(chatIds, message)
