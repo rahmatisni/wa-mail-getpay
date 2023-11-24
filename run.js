@@ -280,8 +280,8 @@ client.on("ready", () => {
 
     app.post("/api/image-upload", upload.single("image"), (req, res) => {
 
-        const [rows, fields] = connectionprod.query('select * from trans_order where order_id = "16-71-POS-2023112317280034"');
-        console.log('test', rows[0]);
+        // const [rows, fields] = connectionprod.query('select * from trans_order where order_id = "16-71-POS-2023112317280034"');
+        // console.log('test', rows[0]);
         const image = req.image;
         const trx_id = req.body.trx_id;
         let phone = req.body.cust_phone;
