@@ -358,7 +358,7 @@ client.on("ready", () => {
             const filesnames = ack;
             const datapaid = fetchData(trx_id);
 
-            log('data',datapaid)
+            console.log('data',datapaid)
             // client
             // .sendMessage(chatIds, media, {caption : "asd"})
             
