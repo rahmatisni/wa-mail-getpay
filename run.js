@@ -308,7 +308,7 @@ client.on("ready", () => {
             // client
             // .sendMessage(chatIds, media, {caption : "asd"})
             console.log(ack, filesnames);
-            sendImage(client, chatIds, ack, 'filesnames')
+            sendImage(client, chatIds, 'ack', filesnames)
                 .then((result) => {
                     client.sendMessage(chatIds, capt).then(() => {
                         client.sendMessage(chatIds, sponsor);
