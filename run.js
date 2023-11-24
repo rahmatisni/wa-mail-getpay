@@ -17,6 +17,8 @@ const multer = require("multer");
 var mysql = require("mysql");
 const port = "3007";
 var server = app.listen(port);
+const util = require("util");
+
 console.log("listen on port", server?.address()?.port);
 
 app.use(bodyParser.json());
@@ -41,6 +43,8 @@ var connectionprod = mysql.createConnection({
     password: "jmt02022!#",
     database: "tavsir_dev",
 });
+
+const queryAsync = util.promisify(connectionprod.query).bind(connectionprod);
 
 var connectioncim = mysql.createConnection({
     host: "172.16.4.25",
@@ -130,7 +134,6 @@ client.on("ready", () => {
         var id = req.body.id;
         let phone = req.body.cust_phone;
         let chatIds = convertPhoneNumber(phone) + "@c.us";
-        //let r = (Math.random() + 1).toString(36).substring(7);
         let r = Math.floor(100000 + Math.random() * 900000);
         const saltRounds = 10;
         const myPlaintextPassword = r.toString();
@@ -141,7 +144,6 @@ client.on("ready", () => {
             client
                 .sendMessage(chatIds, message)
                 .then(() => {
-                    // const hasha = new String(hash);
                     let get_flags =
                         "UPDATE ref_voucher set password  = '" +
                         hash +
@@ -241,55 +243,14 @@ client.on("ready", () => {
             res.send("Error");
         }
     });
-
-    //   app.post('/api/image-upload', upload.single('image'), (req, res) => {
-    //     // const image = req.image
-    //     // console.log(req.file.originalname);
-    //     console.log('RQQ', req)
-    //     let phone = req.body.cust_phone
-    //     let chatIds = convertPhoneNumber(phone) + '@c.us'
-    //     const trx_id = req.body.trx_id
-    //     const filesnames = req.file.originalname
-    //     const imageFile = `./uploads/${filesnames}`
-
-    //     console.log()
-
-    //     const capt = `Selamat, Transaksi kamu dengan id : ${trx_id} telah berhasil kami terima`
-    //     const sponsor =
-    //       'Download aplikasi Travoy untuk melakukan pemesanan di rest area lebih mudah dan cepat'
-
-    //     try {
-    //       client.sendMessage(chatIds, imageFile, filesnames, capt).then((result) => {
-    //         client
-    //           .sendMessage(chatIds, sponsor)
-    //           .then((result) => {
-    //             console.log('Result: ', result) //return object success
-    //             //   console.log("\n\n", media);
-    //             fs.unlinkSync('./uploads/' + filesnames)
-    //             res.send(result)
-    //           })
-    //           .catch((erro) => {
-    //             console.error('Error when sending: ', erro) //return object error
-    //             res.send(erro)
-    //           })
-    //       })
-    //     } catch (error) {
-    //       res.send(error)
-    //     }
-    //   })
-
     app.post("/api/image-upload", upload.single("image"), (req, res) => {
-
-        // const [rows, fields] = connectionprod.query('select * from trans_order where order_id = "16-71-POS-2023112317280034"');
-        // console.log('test', rows[0]);
         const image = req.image;
         const trx_id = req.body.trx_id;
         let phone = req.body.cust_phone;
         let chatIds = convertPhoneNumber(phone) + "@c.us";
-
-        const capt = `Selamat, Transaksi kamu dengan id : ${trx_id} telah berhasil kami terima`;
-        const sponsor =
-            "Download aplikasi Travoy untuk melakukan pemesanan di rest area lebih mudah dan cepat";
+        // const capt = `Selamat, Transaksi kamu dengan id : ${trx_id} telah berhasil kami terima`;
+        // const sponsor =
+        //     "Download aplikasi Travoy untuk melakukan pemesanan di rest area lebih mudah dan cepat";
 
         try {
             async function sendImage(client, chatIds, ack = "", filesnames) {
@@ -305,24 +266,58 @@ client.on("ready", () => {
                         );
                 });
             }
+
+            async function fetchData(id) {
+                try {
+                    const results = await queryAsync(
+                        'SELECT * FROM trans_order a join ref_tenant b on a.tenant_id = b.id where a.order_id ="' +
+                            id +
+                            '"'
+                    );
+
+                    // Assign the result to a variable
+                    const myVariable = results;
+
+                    console.log("Query results:", myVariable);
+
+                    return myVariable;
+                } catch (e) {
+                    console.error("Error executing query:", e);
+                }
+            }
             // const media = MessageMedia.fromFilePath('./uploads/'+req.file.originalname);
             const ack = req.file.originalname;
             const filesnames = ack;
-            // client
-            // .sendMessage(chatIds, media, {caption : "asd"})
-            sendImage(client, chatIds, ack, filesnames)
-                .then((result) => {
-                    client.sendMessage(chatIds, capt).then(() => {
-                        client.sendMessage(chatIds, sponsor);
+            fetchData(trx_id).then((resultss) => {
+                console.log("dsadasd", resultss[0]);
+                const a = resultss[0]["name"];
+                const b = resultss[0]["total"];
+                const c = resultss[0]["status"];
+                const rupiahFormat = b
+                    .toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+                const capt =
+                    c === "REFUND"
+                        ? `Transaksi kamu di *${a}*, dengan total transaksi *Rp${rupiahFormat}* telah berhasil dikembalikan!`
+                        : `Selamat, Transaksi kamu di *${a}*, dengan total transaksi *Rp${rupiahFormat}* telah berhasil kami terima🎉\n\nTerima kasih telah belanja di ${a}😊`;
+
+                const finalCapt =
+                    capt + `\n\n Dengan Getpay, semua #JadiAdaPeluang`;
+
+                sendImage(client, chatIds, finalCapt, filesnames)
+                    .then((result) => {
+                        // client.sendMessage(chatIds, sponsor).then(() => {
+                        //     // client.sendMessage(chatIds, sponsor);
+                        // });
+                        console.log("Result: ", result); //return object success
+                        fs.unlinkSync("./uploads/" + req.file.originalname);
+                        res.send(result);
+                    })
+                    .catch((erro) => {
+                        console.error("Error when sending: ", erro); //return object error
                     });
-                    console.log("Result: ", result); //return object success
-                    //   console.log("\n\n", media);
-                    fs.unlinkSync("./uploads/" + req.file.originalname);
-                    res.send(result);
-                })
-                .catch((erro) => {
-                    console.error("Error when sending: ", erro); //return object error
-                });
+            });
         } catch (e) {
             console.log(e);
         }
@@ -572,18 +567,18 @@ client.on("message_create", (msg) => {
     }
 });
 
-client.on("message_revoke_everyone", async (after, before) => {
-    // Fired whenever a message is deleted by anyone (including you)
-    console.log(after); // message after it was deleted.
-    if (before) {
-        console.log(before); // message before it was deleted.
-    }
-});
+// client.on("message_revoke_everyone", async (after, before) => {
+//     // Fired whenever a message is deleted by anyone (including you)
+//     console.log(after); // message after it was deleted.
+//     if (before) {
+//         console.log(before); // message before it was deleted.
+//     }
+// });
 
-client.on("message_revoke_me", async (msg) => {
-    // Fired whenever a message is only deleted in your own view.
-    console.log(msg.body); // message before it was deleted.
-});
+// client.on("message_revoke_me", async (msg) => {
+//     // Fired whenever a message is only deleted in your own view.
+//     console.log(msg.body); // message before it was deleted.
+// });
 
 client.on("message_ack", (msg, ack) => {
     /*
@@ -601,104 +596,104 @@ client.on("message_ack", (msg, ack) => {
     }
 });
 
-client.on("group_join", (notification) => {
-    // User has joined or been added to the group.
-    console.log("join", notification);
-    notification.reply("User joined.");
-});
+// client.on("group_join", (notification) => {
+//     // User has joined or been added to the group.
+//     console.log("join", notification);
+//     notification.reply("User joined.");
+// });
 
-client.on("group_leave", (notification) => {
-    // User has left or been kicked from the group.
-    console.log("leave", notification);
-    notification.reply("User left.");
-});
+// client.on("group_leave", (notification) => {
+//     // User has left or been kicked from the group.
+//     console.log("leave", notification);
+//     notification.reply("User left.");
+// });
 
-client.on("group_update", (notification) => {
-    // Group picture, subject or description has been updated.
-    console.log("update", notification);
-});
+// client.on("group_update", (notification) => {
+//     // Group picture, subject or description has been updated.
+//     console.log("update", notification);
+// });
 
-client.on("change_state", (state) => {
-    console.log("CHANGE STATE", state);
-});
+// client.on("change_state", (state) => {
+//     console.log("CHANGE STATE", state);
+// });
 
 // Change to false if you don't want to reject incoming calls
-let rejectCalls = true;
+// let rejectCalls = true;
 
-client.on("call", async (call) => {
-    console.log("Call received, rejecting. GOTO Line 261 to disable", call);
-    if (rejectCalls) await call.reject();
-    await client.sendMessage(
-        call.from,
-        `[${call.fromMe ? "Outgoing" : "Incoming"}] Phone call from ${
-            call.from
-        }, type ${call.isGroup ? "group" : ""} ${
-            call.isVideo ? "video" : "audio"
-        } call. ${
-            rejectCalls
-                ? "This call was automatically rejected by the script."
-                : ""
-        }`
-    );
-});
+// client.on("call", async (call) => {
+//     console.log("Call received, rejecting. GOTO Line 261 to disable", call);
+//     if (rejectCalls) await call.reject();
+//     await client.sendMessage(
+//         call.from,
+//         `[${call.fromMe ? "Outgoing" : "Incoming"}] Phone call from ${
+//             call.from
+//         }, type ${call.isGroup ? "group" : ""} ${
+//             call.isVideo ? "video" : "audio"
+//         } call. ${
+//             rejectCalls
+//                 ? "This call was automatically rejected by the script."
+//                 : ""
+//         }`
+//     );
+// });
 
 client.on("disconnected", (reason) => {
     console.log("Client was logged out", reason);
 });
 
-client.on("contact_changed", async (message, oldId, newId, isContact) => {
-    /** The time the event occurred. */
-    const eventTime = new Date(message.timestamp * 1000).toLocaleString();
+// client.on("contact_changed", async (message, oldId, newId, isContact) => {
+//     /** The time the event occurred. */
+//     const eventTime = new Date(message.timestamp * 1000).toLocaleString();
 
-    console.log(
-        `The contact ${oldId.slice(0, -5)}` +
-            `${
-                !isContact
-                    ? " that participates in group " +
-                      `${
-                          (await client.getChatById(message.to ?? message.from))
-                              .name
-                      } `
-                    : " "
-            }` +
-            `changed their phone number\nat ${eventTime}.\n` +
-            `Their new phone number is ${newId.slice(0, -5)}.\n`
-    );
+//     console.log(
+//         `The contact ${oldId.slice(0, -5)}` +
+//             `${
+//                 !isContact
+//                     ? " that participates in group " +
+//                       `${
+//                           (await client.getChatById(message.to ?? message.from))
+//                               .name
+//                       } `
+//                     : " "
+//             }` +
+//             `changed their phone number\nat ${eventTime}.\n` +
+//             `Their new phone number is ${newId.slice(0, -5)}.\n`
+//     );
 
-    /**
-     * Information about the {@name message}:
-     *
-     * 1. If a notification was emitted due to a group participant changing their phone number:
-     * {@name message.author} is a participant's id before the change.
-     * {@name message.recipients[0]} is a participant's id after the change (a new one).
-     *
-     * 1.1 If the contact who changed their number WAS in the current user's contact list at the time of the change:
-     * {@name message.to} is a group chat id the event was emitted in.
-     * {@name message.from} is a current user's id that got an notification message in the group.
-     * Also the {@name message.fromMe} is TRUE.
-     *
-     * 1.2 Otherwise:
-     * {@name message.from} is a group chat id the event was emitted in.
-     * {@name message.to} is @type {undefined}.
-     * Also {@name message.fromMe} is FALSE.
-     *
-     * 2. If a notification was emitted due to a contact changing their phone number:
-     * {@name message.templateParams} is an array of two user's ids:
-     * the old (before the change) and a new one, stored in alphabetical order.
-     * {@name message.from} is a current user's id that has a chat with a user,
-     * whos phone number was changed.
-     * {@name message.to} is a user's id (after the change), the current user has a chat with.
-     */
-});
+//     /**
+//      * Information about the {@name message}:
+//      *
+//      * 1. If a notification was emitted due to a group participant changing their phone number:
+//      * {@name message.author} is a participant's id before the change.
+//      * {@name message.recipients[0]} is a participant's id after the change (a new one).
+//      *
+//      * 1.1 If the contact who changed their number WAS in the current user's contact list at the time of the change:
+//      * {@name message.to} is a group chat id the event was emitted in.
+//      * {@name message.from} is a current user's id that got an notification message in the group.
+//      * Also the {@name message.fromMe} is TRUE.
+//      *
+//      * 1.2 Otherwise:
+//      * {@name message.from} is a group chat id the event was emitted in.
+//      * {@name message.to} is @type {undefined}.
+//      * Also {@name message.fromMe} is FALSE.
+//      *
+//      * 2. If a notification was emitted due to a contact changing their phone number:
+//      * {@name message.templateParams} is an array of two user's ids:
+//      * the old (before the change) and a new one, stored in alphabetical order.
+//      * {@name message.from} is a current user's id that has a chat with a user,
+//      * whos phone number was changed.
+//      * {@name message.to} is a user's id (after the change), the current user has a chat with.
+//      */
+// });
 
-client.on("group_admin_changed", (notification) => {
-    if (notification.type === "promote") {
-        /**
-         * Emitted when a current user is promoted to an admin.
-         * {@link notification.author} is a user who performs the action of promoting/demoting the current user.
-         */
-        console.log(`You were promoted by ${notification.author}`);
-    } else if (notification.type === "demote")
-        /** Emitted when a current user is demoted to a regular user. */
-        console.log(`You were demoted by ${notification.author}`);
-});
+// client.on("group_admin_changed", (notification) => {
+//     if (notification.type === "promote") {
+//         /**
+//          * Emitted when a current user is promoted to an admin.
+//          * {@link notification.author} is a user who performs the action of promoting/demoting the current user.
+//          */
+//         console.log(`You were promoted by ${notification.author}`);
+//     } else if (notification.type === "demote")
+//         /** Emitted when a current user is demoted to a regular user. */
+//         console.log(`You were demoted by ${notification.author}`);
+// });
