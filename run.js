@@ -51,7 +51,7 @@ const pool = mysql.createPool({
     connectionLimit: 10,
     queueLimit: 0,
 });
-const connection = await pool.getConnection();
+const connection2 = await pool.getConnection();
 
 
 var connectioncim = mysql.createConnection({
@@ -317,9 +317,9 @@ client.on("ready", () => {
             // const media = MessageMedia.fromFilePath('./uploads/'+req.file.originalname);
             const ack = req.file.originalname;
             const filesnames = ack;
-            const connection = pool.connection()
+            // const connection = pool.connection()
 
-            const [rows, fields] = connection.query('SELECT * FROM trans_order where oder_id ='+trx_id);
+            const [rows, fields] = connection2.query('SELECT * FROM trans_order where oder_id ='+trx_id);
 
             console.log(rows);
             // client
