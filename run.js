@@ -15,47 +15,6 @@ const bodyParser = require("body-parser");
 const md5 = require("md5");
 const multer = require("multer");
 var mysql = require("mysql");
-const mysql2 = require('mysql2/promise');
-
-
-async function fetchData(order_id) {
-    // Create a connection pool
-    const pool = mysql.createPool({
-
-
-    host: "172.16.4.48",
-    user: "tavsir",
-    password: "jmt02022!#",
-    database: "tavsir_dev",
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0
-    });
-  
-    try {
-      // Get a connection from the pool
-      const connection = await pool.getConnection();
-  
-      try {
-        // Your SQL query
-        const [rows, fields] = await connection.query('SELECT * FROM trans_order where order_id ='+order_id);
-  
-        // Process the result
-        console.log(rows);
-      } finally {
-        // Release the connection back to the pool
-        connection.release();
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error.message);
-    } finally {
-      // Close the connection pool
-      pool.end();
-    }
-  }
-
-  
-
 const port = "3007";
 var server = app.listen(port);
 console.log("listen on port", server?.address()?.port);
@@ -325,16 +284,10 @@ client.on("ready", () => {
         let phone = req.body.cust_phone;
         let chatIds = convertPhoneNumber(phone) + "@c.us";
 
-        // async function fetchData() {
-        //     let get_flags =
-        //     "SELECT * FROM trans_order"
-        //     "'where order_id  =" +
-        //     trx_id;
-        //     const data = await connectionprod.query(get_flags);
-        //     // Now you can use 'data' after the query has been executed.
-        //     return data
-        //   }
-          
+        let get_flags =
+        "SELECT * FROM trans_order"
+        "'where order_id  =" +
+        trx_id;
         const capt = `Selamat, Transaksi kamu dengan id : ${trx_id} telah berhasil kami terima`;
         const sponsor =
             "Download aplikasi Travoy untuk melakukan pemesanan di rest area lebih mudah dan cepat";
@@ -356,20 +309,16 @@ client.on("ready", () => {
             // const media = MessageMedia.fromFilePath('./uploads/'+req.file.originalname);
             const ack = req.file.originalname;
             const filesnames = ack;
-            const datapaid = fetchData(trx_id);
-
-            console.log('data',datapaid)
             // client
             // .sendMessage(chatIds, media, {caption : "asd"})
-            
             console.log(ack, filesnames);
             sendImage(client, chatIds, capt, filesnames)
                 .then((result) => {
-                    client.sendMessage(chatIds, capt)
-                    
-                    // .then(() => {
-                    //     client.sendMessage(chatIds, sponsor);
-                    // });
+                    const asd = connectionprod.query(get_flags)
+                    console.log('asd',asd)
+                    .then(() => {
+                        client.sendMessage(chatIds, sponsor);
+                    });
                     console.log("Result: ", result); //return object success
                     //   console.log("\n\n", media);
                     fs.unlinkSync("./uploads/" + req.file.originalname);
