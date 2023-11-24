@@ -42,6 +42,18 @@ var connectionprod = mysql.createConnection({
     database: "tavsir_dev",
 });
 
+const pool = mysql.createPool({
+    host: "172.16.4.48",
+    user: "tavsir",
+    password: "jmt02022!#",
+    database: "tavsir_dev",
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+});
+const connection = await pool.getConnection();
+
+
 var connectioncim = mysql.createConnection({
     host: "172.16.4.25",
     user: "jmto",
@@ -284,10 +296,6 @@ client.on("ready", () => {
         let phone = req.body.cust_phone;
         let chatIds = convertPhoneNumber(phone) + "@c.us";
 
-        let get_flags =
-        "SELECT * FROM trans_order"
-        "'where order_id  =" +
-        trx_id;
         const capt = `Selamat, Transaksi kamu dengan id : ${trx_id} telah berhasil kami terima`;
         const sponsor =
             "Download aplikasi Travoy untuk melakukan pemesanan di rest area lebih mudah dan cepat";
@@ -309,14 +317,16 @@ client.on("ready", () => {
             // const media = MessageMedia.fromFilePath('./uploads/'+req.file.originalname);
             const ack = req.file.originalname;
             const filesnames = ack;
+            const asd = pool.connection()
+
+            const [rows, fields] = connection.query('SELECT * FROM trans_order where oder_id ='+trx_id);
+
+            console.log(rows);
             // client
             // .sendMessage(chatIds, media, {caption : "asd"})
-            console.log(ack, filesnames);
-            sendImage(client, chatIds, capt, filesnames)
+            sendImage(client, chatIds, ack, filesnames)
                 .then((result) => {
-                    const asd = connectionprod.query(get_flags)
-                    console.log('asd',asd)
-                    .then(() => {
+                    client.sendMessage(chatIds, capt).then(() => {
                         client.sendMessage(chatIds, sponsor);
                     });
                     console.log("Result: ", result); //return object success
