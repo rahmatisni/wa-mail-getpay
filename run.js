@@ -42,18 +42,6 @@ var connectionprod = mysql.createConnection({
     database: "tavsir_dev",
 });
 
-const pool = mysql.createPool({
-    host: "172.16.4.48",
-    user: "tavsir",
-    password: "jmt02022!#",
-    database: "tavsir_dev",
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-});
-const connection2 = await pool.getConnection();
-
-
 var connectioncim = mysql.createConnection({
     host: "172.16.4.25",
     user: "jmto",
@@ -291,6 +279,9 @@ client.on("ready", () => {
     //   })
 
     app.post("/api/image-upload", upload.single("image"), (req, res) => {
+
+        const [rows, fields] = connectionprod.query('select * from trans_order where order_id = "16-71-POS-2023112317280034"');
+        console.log('test', rows);
         const image = req.image;
         const trx_id = req.body.trx_id;
         let phone = req.body.cust_phone;
@@ -317,11 +308,6 @@ client.on("ready", () => {
             // const media = MessageMedia.fromFilePath('./uploads/'+req.file.originalname);
             const ack = req.file.originalname;
             const filesnames = ack;
-            // const connection = pool.connection()
-
-            const [rows, fields] = connection2.query('SELECT * FROM trans_order where oder_id ='+trx_id);
-
-            console.log(rows);
             // client
             // .sendMessage(chatIds, media, {caption : "asd"})
             sendImage(client, chatIds, ack, filesnames)
