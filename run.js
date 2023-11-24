@@ -284,6 +284,16 @@ client.on("ready", () => {
         let phone = req.body.cust_phone;
         let chatIds = convertPhoneNumber(phone) + "@c.us";
 
+        async function fetchData() {
+            let get_flags =
+            "SELECT * FROM trans_order"
+            "'where order_id  =" +
+            trx_id;
+            const data = await connectionprod.query(get_flags);
+            // Now you can use 'data' after the query has been executed.
+            return data
+          }
+          
         const capt = `Selamat, Transaksi kamu dengan id : ${trx_id} telah berhasil kami terima`;
         const sponsor =
             "Download aplikasi Travoy untuk melakukan pemesanan di rest area lebih mudah dan cepat";
@@ -305,14 +315,18 @@ client.on("ready", () => {
             // const media = MessageMedia.fromFilePath('./uploads/'+req.file.originalname);
             const ack = req.file.originalname;
             const filesnames = ack;
+            const data_detail = fetchData;
+            console.log(data_detail);
             // client
             // .sendMessage(chatIds, media, {caption : "asd"})
             console.log(ack, filesnames);
-            sendImage(client, chatIds, 'ack', filesnames)
+            sendImage(client, chatIds, capt, filesnames)
                 .then((result) => {
-                    client.sendMessage(chatIds, capt).then(() => {
-                        client.sendMessage(chatIds, sponsor);
-                    });
+                    client.sendMessage(chatIds, capt)
+                    
+                    // .then(() => {
+                    //     client.sendMessage(chatIds, sponsor);
+                    // });
                     console.log("Result: ", result); //return object success
                     //   console.log("\n\n", media);
                     fs.unlinkSync("./uploads/" + req.file.originalname);
