@@ -307,6 +307,7 @@ client.on("ready", () => {
             const filesnames = ack;
             // client
             // .sendMessage(chatIds, media, {caption : "asd"})
+            console.log(ack, filesnames);
             sendImage(client, chatIds, ack, filesnames)
                 .then((result) => {
                     client.sendMessage(chatIds, capt).then(() => {
