@@ -328,43 +328,92 @@ app.post("/api/mail-upload", upload.single("image"), (req, res) => {
     const image = req.image;
     let mails = req.body.cust_mail;
 
-    var datas =
-        "<H3>Halo kak, Pembayaran kamu dengan ID transaksi" +
-        req.body.trx_id +
-        " di " +
-        req.body.rest_area_name +
-        " berhasil 🥳</H3><br><img src='cid:unique@cid' width='50%' height='50%'/><br>Terimakasih telah berbelanja di toko kami. Semoga harimu selalu menyenangkan ya";
-    var mainOptions = {
-        from: "travoymerchant@jmto.co.id",
-        to: mails,
-        subject: "Get Pay E-Receipt" + req.body.trx_id,
-        pool: true,
-        attachments: [
-            {
-                // stream as an attachment
-                filename: req.file.originalname,
-                content: fs.createReadStream(
-                    "./uploads/" + req.file.originalname
-                ),
-                cid: "unique@cid",
-            },
-        ],
-        html: datas,
-        //  +'<img src="cid:'+cid+'"/>'
-    };
+    async function fetchData(id) {
+        try {
+            const results = await queryAsync(
+                'SELECT * FROM trans_order a join ref_tenant b on a.tenant_id = b.id where a.order_id ="' +
+                    id +
+                    '"'
+            );
 
-    smtpTransport.sendMail(mainOptions, function (err, info) {
-        if (err) {
-            res.send(err);
-        } else {
-            fs.unlinkSync("./uploads/" + req.file.originalname);
-            res.send({
-                status: "1",
-                head: "Success",
-                detail: req.file.originalname,
-            });
+            // Assign the result to a variable
+            const myVariable = results;
+
+            console.log("Query results:", myVariable);
+
+            return myVariable;
+        } catch (e) {
+            console.error("Error executing query:", e);
         }
+    }
+
+    fetchData(req.body.trx_id).then((result) => {
+        console.log(result);
+
+        const a = result[0]["order_id"];
+        const b = result[0]["name"];
+        const c = result[0]["total"];
+        const d = result[0]["status"];
+        const rupiahFormat = c.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+        const datas =
+            d === "REFUND"
+                ? 
+            `
+            <h4>Refund Berhasil🎉 </h4>
+            Transaksi kamu di <b>${b}</b>, dengan total transaksi <b>Rp${rupiahFormat}</b> telah berhasil dikembalikan!
+            <br><br>
+            <br><br>
+            <br><img src='cid:unique@cid' width='50%' height='50%'/><br>
+            Dengan Getpay, semua #JadiAdaPeluang`
+
+            : `
+            <h4>Transaksi Berhasil🎉 </h4>
+            Transaksi kamu di ${b}, dengan total transaksi <b>Rp${rupiahFormat}</b> telah berhasil kami terima🎉
+            <br><br>
+            Terima kasih telah belanja di ${b}😊
+            <br><br>
+            <br><img src='cid:unique@cid' width='50%' height='50%'/><br>
+            Dengan Getpay, semua #JadiAdaPeluang`;
+
+            return datas
+    }).then((datas) => {
+
+        console.log('asdasd',datas)
+        var mainOptions = {
+            from: "travoymerchant@jmto.co.id",
+            to: mails,
+            subject: "Get Pay E-Receipt" + req.body.trx_id,
+            pool: true,
+            attachments: [
+                {
+                    // stream as an attachment
+                    filename: req.file.originalname,
+                    content: fs.createReadStream(
+                        "./uploads/" + req.file.originalname
+                    ),
+                    cid: "unique@cid",
+                },
+            ],
+            html: datas,
+            //  +'<img src="cid:'+cid+'"/>'
+        };
+    
+        smtpTransport.sendMail(mainOptions, function (err, info) {
+            if (err) {
+                res.send(err);
+            } else {
+                fs.unlinkSync("./uploads/" + req.file.originalname);
+                res.send({
+                    status: "1",
+                    head: "Success",
+                    detail: req.file.originalname,
+                });
+            }
+        });
+        
     });
+
 });
 
 function convertPhoneNumber(phoneNumber) {
