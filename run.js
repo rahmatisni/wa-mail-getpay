@@ -283,6 +283,7 @@ client.on("ready", () => {
                             '"'
                     );
 
+                    console.log(result2);
                     // Assign the result to a variable
                     const myVariable = results ?? result2;
 
