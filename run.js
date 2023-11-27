@@ -45,6 +45,8 @@ var connectionprod = mysql.createConnection({
 });
 
 const queryAsync = util.promisify(connectionprod.query).bind(connectionprod);
+const queryAsyncdev = util.promisify(connection.query).bind(connection);
+
 
 var connectioncim = mysql.createConnection({
     host: "172.16.4.25",
@@ -275,8 +277,14 @@ client.on("ready", () => {
                             '"'
                     );
 
+                    const result2 = await queryAsyncdev(
+                        'SELECT * FROM trans_order a join ref_tenant b on a.tenant_id = b.id where a.order_id ="' +
+                            id +
+                            '"'
+                    );
+
                     // Assign the result to a variable
-                    const myVariable = results;
+                    const myVariable = results ?? result2;
 
                     console.log("Query results:", myVariable);
 
@@ -335,9 +343,17 @@ app.post("/api/mail-upload", upload.single("image"), (req, res) => {
                     id +
                     '"'
             );
+             const result2 = await queryAsyncdev(
+                        'SELECT * FROM trans_order a join ref_tenant b on a.tenant_id = b.id where a.order_id ="' +
+                            id +
+                            '"'
+                    );
+
+                    // Assign the result to a variable
+            const myVariable = results ?? result2;
 
             // Assign the result to a variable
-            const myVariable = results;
+            // const myVariable = results;
 
             console.log("Query results:", myVariable);
 
