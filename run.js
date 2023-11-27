@@ -282,11 +282,9 @@ client.on("ready", () => {
                             id +
                             '"'
                     );
-
-                    console.log(result2);
-                    // Assign the result to a variable
-                    const myVariable = results ?? result2;
-
+                    
+                    const myVariable = results.length > 0 ? results:result2
+                    
                     console.log("Query results:", myVariable);
 
                     return myVariable;
