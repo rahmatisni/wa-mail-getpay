@@ -454,7 +454,7 @@ app.post("/api/mail-register", function (req, res) {
             <p>Halo,</p>
             <p>Kami menerima permintaan untuk melakukan reset password akun Getpay.</p>
             <p>Bila benar Anda telah membuat permintaan tersebut, klik tombol <b>Reset Password</b> di bawah ini.</p>
-            <br>Bila tidak, Anda dapat mengabaikan email ini.</br>
+            Bila tidak, Anda dapat mengabaikan email ini.
             <br>            </br>
 
             <a href="${link}/${uuid}" target="_blank" style="display: inline-block; background-color: blue; color: white; padding: 14px 20px; text-align: center; text-decoration: none; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 10px;">Reset Password</a>
