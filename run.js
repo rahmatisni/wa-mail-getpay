@@ -428,6 +428,42 @@ app.post("/api/mail-upload", upload.single("image"), (req, res) => {
         });
 });
 
+app.post("/api/mail-register", function (req, res) {
+    const { email, link, uuid } = req.body;
+
+    const datas =`
+            <h4> Link Aktivasi 🎉 </h4>
+            Berikut link aktivasi kamu ${link}/${uuid}
+            <br><br>
+            Dengan Getpay, semua #JadiAdaPeluang`
+
+    var mainOptions = {
+        from: "travoymerchant@jmto.co.id",
+        to: email,
+        subject: "Link Aktivasi Getpay",
+        pool: true,
+        attachments: [],
+        html: datas,
+    };
+
+    smtpTransport.sendMail(mainOptions, function (err, info) {
+        if (err) {
+            // res.send(err);
+            res.send({
+                status: "0",
+                head: "Failed",
+                detail: "Email Aktivasi Gagal Terkirim",
+            });
+        } else {
+            res.send({
+                status: "1",
+                head: "Success",
+                detail: "Email Aktivasi Terkirim",
+            });
+        }
+    });
+});
+
 function convertPhoneNumber(phoneNumber) {
     // Remove all non-digit characters from the phone number
     console.log("//", phoneNumber);
