@@ -436,13 +436,13 @@ app.post("/api/mail-register", function (req, res) {
         case "active":
             htmlContent = `
              <div style="border: 2px solid #007BFF; padding: 20px; margin: 20px; border-radius: 10px; background-color: #EAF2FF;">
-             <img src="cid:getpay-logo" style="max-width: 30%;">
+             <img src="cid:getpay-logo" style="max-width: 15%;">
              <p>Halo,</p>
             <p>Terimakasih telah berlangganan Getpay.</p>
             <p>Email anda berhasil terdaftar, silahkan klik tombol <b>Buat Password</b> untuk melanjutkan</p>
             <br>            </br>
 
-            <a href="${link}/${uuid}" target="_blank" style="display: inline-block; background-color: blue; color: white; padding: 14px 20px; text-align: center; text-decoration: none; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 10px;">Buat Password</a>
+            <a href="${link}/${uuid}" target="_blank" style="display: inline-block; background-color: blue; color: white; padding: 14px 20px; text-align: center; text-decoration: none; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 10px;">Buat Password</a>        
             </div>
 
           `;
@@ -450,15 +450,14 @@ app.post("/api/mail-register", function (req, res) {
         case "reset":
             htmlContent = `
             <div style="border: 2px solid #007BFF; padding: 20px; margin: 20px; border-radius: 10px; background-color: #EAF2FF;">
-            <img src="cid:getpay-logo" style="max-width: 30%;">
+            <img src="cid:getpay-logo" style="max-width: 15%;">
             <p>Halo,</p>
             <p>Kami menerima permintaan untuk melakukan reset password akun Getpay.</p>
             <p>Bila benar Anda telah membuat permintaan tersebut, klik tombol <b>Reset Password</b> di bawah ini.</p>
-            Bila tidak, Anda dapat mengabaikan email ini.
+            <p>Bila tidak, Anda dapat mengabaikan email ini.</p>
             <br>            </br>
 
-            <a href="${link}/${uuid}" target="_blank" style="display: inline-block; background-color: blue; color: white; padding: 14px 20px; text-align: center; text-decoration: none; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 10px;">Reset Password</a>
-           </div>
+            <a href="${link}/${uuid}" target="_blank" style="display: inline-block; background-color: blue; color: white; padding: 14px 20px; text-align: center; text-decoration: none; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 10px;">Reset Password</a>           </div>
           `;
             break;
 
@@ -466,8 +465,10 @@ app.post("/api/mail-register", function (req, res) {
             break;
     }
 
-    const imageContent = fs.readFileSync('getpay-logo.png', { encoding: 'base64' });
-const imageDataUrl = `data:image/png;base64,${imageContent}`;
+    const imageContent = fs.readFileSync("getpay-logo.png", {
+        encoding: "base64",
+    });
+    const imageDataUrl = `data:image/png;base64,${imageContent}`;
 
     var mainOptions = {
         from: "travoymerchant@jmto.co.id",
@@ -476,11 +477,11 @@ const imageDataUrl = `data:image/png;base64,${imageContent}`;
         pool: true,
         attachments: [
             {
-                filename: 'getpay-logo.png',
+                filename: "getpay-logo.png",
                 content: imageContent,
-                encoding: 'base64',
-                cid: 'getpay-logo', // Content ID for embedding the image
-              },
+                encoding: "base64",
+                cid: "getpay-logo", // Content ID for embedding the image
+            },
         ],
         html: htmlContent,
     };
