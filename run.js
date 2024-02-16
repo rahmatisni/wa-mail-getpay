@@ -504,6 +504,42 @@ app.post("/api/mail-register", function (req, res) {
     });
 });
 
+app.post("/api/send-refund-derek",function (req,res) {
+        var id = req.body.id;
+        var tanggal = req.body.tanggal;
+        var total = req.body.total;
+        let phone = req.body.phone;
+        let chatIds = convertPhoneNumber(phone) + "@c.us";
+        let r = (Math.random() + 1).toString(36).substring(7);
+        const saltRounds = 10;
+        const myPlaintextPassword = r;
+        const hash = md5(myPlaintextPassword);
+
+        try {
+            client.sendMessage(
+                chatIds,
+                "*Refund baru telah dibuat!*"
+            );
+            client
+                .sendMessage(
+                    chatIds,
+                    `Tiket Derek: ${id} Tanggal: ${tanggal} Total: Rp ${total}`
+                )
+                .then(() => {
+                    res.send({
+                        status: 1,
+                        message: "Berhasil Reset Password",
+                    });
+                })
+                .catch((erro) => {
+                    console.error("Error when sending: ", erro); //return object error
+                    res.send(erro);
+                });
+        } catch (error) {
+            res.send("Error");
+        }
+    });
+
 function convertPhoneNumber(phoneNumber) {
     // Remove all non-digit characters from the phone number
     console.log("//", phoneNumber);
