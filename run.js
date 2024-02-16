@@ -505,25 +505,52 @@ app.post("/api/mail-register", function (req, res) {
 });
 
 app.post("/api/send-refund-derek",function (req,res) {
-        var id = req.body.id;
-        var tanggal = req.body.tanggal;
-        var total = req.body.total;
-        let phone = req.body.phone;
-        let chatIds = convertPhoneNumber(phone) + "@c.us";
+        const {userName,
+            userEmail,
+            userPhone,
+            order_id,
+            bank_name,
+            rekening_name,
+            rekening_number,
+            refundpercent,
+            total_derek,
+            total_refund,
+        formattedDate, pjname, pjmail,pjphone } = req.body
+        console.log('req.body',req.body);
+        let chatIds = convertPhoneNumber(userPhone) + "@c.us";
         let r = (Math.random() + 1).toString(36).substring(7);
         const saltRounds = 10;
         const myPlaintextPassword = r;
         const hash = md5(myPlaintextPassword);
 
         try {
-            client.sendMessage(
-                chatIds,
-                "*Refund baru telah dibuat!*"
-            );
+            // client.sendMessage(
+            //     chatIds,
+            //     "*Refund baru telah dibuat!*"
+            // );
             client
                 .sendMessage(
                     chatIds,
-                    `Tiket Derek: ${id} Tanggal: ${tanggal} Total: Rp ${total}`
+                    `*Halo, Manager Area Jagorawi!👋🏻*
+                    
+                    Terdapat permintaan refund atas pesanan derek berikut:
+                    
+                    Ticket ID : *${order_id}*
+                    Nama Pengguna Travoy: ${pjname}
+                    No. Handphone: ${pjphone ? pjphone : '-'}
+                    ================================
+                    
+                    Nama Bank: ${bank_name}
+                    Nama Rekening: ${rekening_name}
+                    No. Rekening: ${rekening_number}
+                    Persentase Refund: ${refundpercent}
+                    Tarif Derek: Rp ${total_derek}
+                    Nominal Refund: Rp ${total_refund}
+                    Tanggal Refund: ${formattedDate}
+                    
+                    Segera lakukan klaim refund pada dashboard Anda. Silahkan buka tautan berikut untuk melanjutkan proses refund https://travoyadmin-dev.jmto.co.id/refund_derek .
+                    
+                    Batas maksimal klaim refund adalah 14 hari setelah pesan ini diterima.`
                 )
                 .then(() => {
                     res.send({
