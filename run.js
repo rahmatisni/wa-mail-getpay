@@ -18,6 +18,7 @@ var mysql = require("mysql");
 const port = "3007";
 var server = app.listen(port);
 const util = require("util");
+const dotenv = require('dotenv').config()
 
 console.log("listen on port", server?.address()?.port);
 
@@ -78,13 +79,13 @@ const e = require("express");
 const dir = "./uploads";
 
 var smtpTransport = nodemailer.createTransport({
-    host: "mail.jmto.co.id",
+    host: process.env.MAIL_HOST,
     secure: false,
-    port: "26",
+    port: process.env.MAIL_PORT,
     auth: {
         //type: 'OAuth2',
-        user: "travoymerchant@jmto.co.id",
-        pass: "travoymerchant",
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
     },
     tls: {
         secure: false,
